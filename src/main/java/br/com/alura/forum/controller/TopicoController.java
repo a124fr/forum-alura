@@ -8,6 +8,8 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -67,6 +69,7 @@ public class TopicoController {
 //	}
 	
 	@GetMapping
+	@Cacheable(value = "listaDeTopicos")
 	public Page<TopicoDto> lista(@RequestParam(required = false) String nomeCurso, 
 		@PageableDefault(sort = "id", direction = Direction.DESC, page = 0, size = 10)	Pageable paginacao) {
 		if (nomeCurso == null) {
@@ -80,6 +83,7 @@ public class TopicoController {
 //	@RequestMapping(method = RequestMethod.POST, value = "/topicos")
 	@Transactional
 	@PostMapping
+	@CacheEvict(value = "listaDeTopicos", allEntries = true)
 	public ResponseEntity<TopicoDto> cadastrar(@RequestBody @Valid TopicoForm form, UriComponentsBuilder uriBuilder) {		
 		Topico topico = form.converter(this.cursoRepository);
 		this.topicoRepository.save(topico);
@@ -89,6 +93,7 @@ public class TopicoController {
 	}
 	
 	@GetMapping("/{id}")
+	@CacheEvict(value = "listaDeTopicos", allEntries = true)
 	public ResponseEntity<DetalhesDoTopicoDto> detalhar(@PathVariable Long id) {
 		Optional<Topico> optionalTopico = this.topicoRepository.findById(id);
 		if (optionalTopico.isPresent()) {
@@ -112,6 +117,7 @@ public class TopicoController {
 	
 	@Transactional
 	@DeleteMapping("/{id}")
+	@CacheEvict(value = "listaDeTopicos", allEntries = true)
 	public ResponseEntity<?> excluir(@PathVariable Long id) {
 		Optional<Topico> optionalTopico = this.topicoRepository.findById(id);
 		if (optionalTopico.isPresent()) {
